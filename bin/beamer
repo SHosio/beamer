@@ -59,6 +59,14 @@ def post(path, obj):
         return json.loads(r.read())
 
 
+def client_count():
+    try:
+        with urllib.request.urlopen(BASE + "/clients", timeout=0.5) as r:
+            return json.loads(r.read()).get("count", 0)
+    except Exception:
+        return 0
+
+
 def cmd_send(rest):
     title = None
     if "--title" in rest:
@@ -69,6 +77,10 @@ def cmd_send(rest):
         sys.stderr.write("beamer: no text on stdin\n")
         sys.exit(1)
     ensure_up()
+    # Open a tab only when nothing is listening, so the message is actually seen.
+    # The new tab replays history on connect, so this card is not missed.
+    if os.environ.get("BEAMER_AUTOOPEN", "1") != "0" and client_count() == 0:
+        subprocess.run(["open", BASE + "/"])
     res = post("/send", {"text": text, "title": title})
     print(f"beamed #{res.get('id')}")
 

@@ -111,6 +111,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/events":
             return self._sse()
+        if self.path == "/clients":
+            with self.hub.lock:
+                count = len(self.hub.clients)
+            return self._json(200, {"count": count})
         path = self.path.split("?", 1)[0]
         if path == "/":
             return self._file(WEB / "index.html")

@@ -40,7 +40,7 @@ From the project folder:
 printf '# It works\n\nThis card is **live**.' | ./bin/beamer send --title "Hello"
 ```
 
-Drag the tab to your second monitor and leave it there.
+Drag the tab to your second monitor and leave it there. If you forget to open one, `send` notices that no tab is connected and opens it for you.
 
 Other commands:
 

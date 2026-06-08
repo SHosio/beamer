@@ -43,7 +43,7 @@ def wait_up(timeout=5):
 
 def cli_test():
     """bin/beamer send auto-starts the server and delivers the message."""
-    env = dict(os.environ, BEAMER_PORT=PORT)
+    env = dict(os.environ, BEAMER_PORT=PORT, BEAMER_AUTOOPEN="0")
     subprocess.run([str(ROOT / "bin" / "beamer"), "stop"], env=env)
     time.sleep(0.5)
     p = subprocess.run(
@@ -71,6 +71,10 @@ def main():
         for asset in ("/app.js", "/styles.css", "/md.js"):
             with urllib.request.urlopen(BASE + asset, timeout=2) as r:
                 assert r.status == 200, asset
+
+        # no browsers connected yet
+        with urllib.request.urlopen(BASE + "/clients", timeout=2) as r:
+            assert json.loads(r.read())["count"] == 0
 
         # send + history replay
         res = post("/send", {"text": "hello **world**", "title": "Greeting"})

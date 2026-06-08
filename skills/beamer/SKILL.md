@@ -36,6 +36,7 @@ Clear the feed:
     /Users/simohosio/Code/open-source/beamer/bin/beamer clear
 
 ## Notes
+- `send` auto-opens a browser tab when none is connected, so the user sees the message even if they have no tab open. Once a tab is connected it will not open more.
 - Markdown is rendered: headings, bold, italic, inline code, fenced code blocks, lists, links.
 - Every message gets a Copy button on the page for clean paste.
 - Prefer several focused messages over one giant blob when teaching.
