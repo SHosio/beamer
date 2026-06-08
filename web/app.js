@@ -1,5 +1,48 @@
 const feed = document.getElementById("feed");
 const empty = document.getElementById("empty");
+const soundBtn = document.getElementById("sound");
+
+// Sound preference persists across reloads; default on.
+let soundOn = localStorage.getItem("beamer-sound") !== "off";
+let audioCtx = null;
+
+function renderSoundBtn() {
+  soundBtn.textContent = soundOn ? "🔔" : "🔕";
+  soundBtn.title = soundOn ? "Sound on" : "Sound off";
+}
+
+function chime() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const now = audioCtx.currentTime;
+    [660, 880].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const t = now + i * 0.09;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  } catch (e) {
+    // Audio unavailable; ignore.
+  }
+}
+
+renderSoundBtn();
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  localStorage.setItem("beamer-sound", soundOn ? "on" : "off");
+  renderSoundBtn();
+  if (soundOn) chime();  // confirms the choice and unlocks audio for later
+});
 
 function relTime(ts) {
   return new Date(ts * 1000).toLocaleTimeString();
@@ -42,14 +85,22 @@ function addCard(msg) {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 }
 
+let replaying = true;
+
 function connect() {
   const es = new EventSource("/events");
   // On each (re)connect the server replays full history, so rebuild from scratch.
   es.onopen = () => {
     feed.innerHTML = "";
     if (empty) empty.style.display = "";
+    // Stay silent while the replayed burst lands; chime only on later live messages.
+    replaying = true;
+    setTimeout(() => { replaying = false; }, 500);
   };
-  es.addEventListener("message", (e) => addCard(JSON.parse(e.data)));
+  es.addEventListener("message", (e) => {
+    addCard(JSON.parse(e.data));
+    if (soundOn && !replaying) chime();
+  });
   es.addEventListener("clear", () => {
     feed.innerHTML = "";
     if (empty) empty.style.display = "";
