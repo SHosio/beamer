@@ -2,6 +2,7 @@ const feed = document.getElementById("feed");
 const empty = document.getElementById("empty");
 const soundBtn = document.getElementById("sound");
 const wipeBtn = document.getElementById("wipe");
+const effectSel = document.getElementById("effect");
 
 function postJSON(path, obj) {
   return fetch(path, {
@@ -17,46 +18,79 @@ function showEmptyIfBare() {
 
 wipeBtn.addEventListener("click", () => postJSON("/clear", {}));
 
-// Sound preference persists across reloads; default on.
+// Sound preferences persist across reloads; sound defaults on, effect to "chime".
 let soundOn = localStorage.getItem("beamer-sound") !== "off";
+let effect = localStorage.getItem("beamer-effect") || "chime";
 let audioCtx = null;
+
+function ctx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+// One enveloped oscillator: the building block for every effect.
+function tone(c, freq, start, dur, type = "sine", peak = 0.18) {
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  osc.connect(gain).connect(c.destination);
+  osc.start(start);
+  osc.stop(start + dur + 0.03);
+  return osc;
+}
+
+// All effects are synthesized, no audio files. Each takes (context, startTime).
+const EFFECTS = {
+  Chime(c, t) { tone(c, 660, t, 0.25); tone(c, 880, t + 0.09, 0.25); },
+  Blip(c, t) { tone(c, 880, t, 0.12, "triangle", 0.2); },
+  Marimba(c, t) { tone(c, 523.25, t, 0.18, "sine", 0.22); tone(c, 783.99, t + 0.06, 0.22); },
+  Coin(c, t) { tone(c, 987.77, t, 0.07, "square", 0.12); tone(c, 1318.51, t + 0.07, 0.20, "square", 0.12); },
+  Pop(c, t) { tone(c, 440, t, 0.12, "sine", 0.22).frequency.exponentialRampToValueAtTime(160, t + 0.12); },
+  Knock(c, t) { tone(c, 180, t, 0.12, "triangle", 0.3); tone(c, 120, t + 0.05, 0.14, "triangle", 0.25); },
+};
+
+function playEffect() {
+  try {
+    const c = ctx();
+    (EFFECTS[effect] || EFFECTS.Chime)(c, c.currentTime);
+  } catch (e) {
+    // Audio unavailable; ignore.
+  }
+}
 
 function renderSoundBtn() {
   soundBtn.textContent = soundOn ? "🔔" : "🔕";
   soundBtn.title = soundOn ? "Sound on" : "Sound off";
 }
 
-function chime() {
-  try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    const now = audioCtx.currentTime;
-    [660, 880].forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      const t = now + i * 0.09;
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(t);
-      osc.stop(t + 0.3);
-    });
-  } catch (e) {
-    // Audio unavailable; ignore.
-  }
-}
+Object.keys(EFFECTS).forEach((name) => {
+  const opt = document.createElement("option");
+  opt.value = name;
+  opt.textContent = name;
+  effectSel.append(opt);
+});
+if (!EFFECTS[effect]) effect = "Chime";
+effectSel.value = effect;
+
+effectSel.addEventListener("change", () => {
+  effect = effectSel.value;
+  localStorage.setItem("beamer-effect", effect);
+  playEffect();  // preview the chosen sound
+});
 
 renderSoundBtn();
 soundBtn.addEventListener("click", () => {
   soundOn = !soundOn;
   localStorage.setItem("beamer-sound", soundOn ? "on" : "off");
   renderSoundBtn();
-  if (soundOn) chime();  // confirms the choice and unlocks audio for later
+  if (soundOn) playEffect();  // confirms the choice and unlocks audio for later
 });
 
 function relTime(ts) {
@@ -125,7 +159,7 @@ function connect() {
   };
   es.addEventListener("message", (e) => {
     addCard(JSON.parse(e.data));
-    if (soundOn && !replaying) chime();
+    if (soundOn && !replaying) playEffect();
   });
   es.addEventListener("delete", (e) => {
     const el = feed.querySelector(`[data-id="${JSON.parse(e.data).id}"]`);
