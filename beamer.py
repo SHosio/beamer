@@ -33,6 +33,11 @@ class Hub:
             self._broadcast(("message", msg))
             return msg
 
+    def delete(self, mid):
+        with self.lock:
+            self.history = [m for m in self.history if m["id"] != mid]
+            self._broadcast(("delete", {"id": mid}))
+
     def clear(self):
         with self.lock:
             self.history.clear()
@@ -87,6 +92,17 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(400, {"ok": False, "error": "text required"})
             msg = self.hub.add(data.get("title"), text)
             return self._json(200, {"ok": True, "id": msg["id"]})
+        if self.path == "/delete":
+            length = int(self.headers.get("Content-Length", 0))
+            raw = self.rfile.read(length) if length else b"{}"
+            try:
+                mid = json.loads(raw).get("id")
+            except Exception:
+                return self._json(400, {"ok": False, "error": "invalid json"})
+            if not isinstance(mid, int):
+                return self._json(400, {"ok": False, "error": "id required"})
+            self.hub.delete(mid)
+            return self._json(200, {"ok": True})
         if self.path == "/clear":
             self.hub.clear()
             return self._json(200, {"ok": True})

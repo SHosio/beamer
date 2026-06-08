@@ -1,6 +1,21 @@
 const feed = document.getElementById("feed");
 const empty = document.getElementById("empty");
 const soundBtn = document.getElementById("sound");
+const wipeBtn = document.getElementById("wipe");
+
+function postJSON(path, obj) {
+  return fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(obj),
+  });
+}
+
+function showEmptyIfBare() {
+  if (!feed.children.length && empty) empty.style.display = "";
+}
+
+wipeBtn.addEventListener("click", () => postJSON("/clear", {}));
 
 // Sound preference persists across reloads; default on.
 let soundOn = localStorage.getItem("beamer-sound") !== "off";
@@ -53,6 +68,7 @@ function addCard(msg) {
 
   const card = document.createElement("div");
   card.className = "card";
+  card.dataset.id = msg.id;
 
   const head = document.createElement("div");
   head.className = "card-head";
@@ -74,7 +90,17 @@ function addCard(msg) {
     setTimeout(() => { copy.textContent = "⧉ Copy"; }, 1200);
   });
 
-  head.append(meta, copy);
+  const del = document.createElement("button");
+  del.className = "del";
+  del.title = "Delete this message";
+  del.textContent = "🗑";
+  del.addEventListener("click", () => postJSON("/delete", { id: msg.id }));
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.append(copy, del);
+
+  head.append(meta, actions);
 
   const body = document.createElement("div");
   body.className = "body";
@@ -100,6 +126,11 @@ function connect() {
   es.addEventListener("message", (e) => {
     addCard(JSON.parse(e.data));
     if (soundOn && !replaying) chime();
+  });
+  es.addEventListener("delete", (e) => {
+    const el = feed.querySelector(`[data-id="${JSON.parse(e.data).id}"]`);
+    if (el) el.remove();
+    showEmptyIfBare();
   });
   es.addEventListener("clear", () => {
     feed.innerHTML = "";

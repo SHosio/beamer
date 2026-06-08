@@ -80,16 +80,22 @@ def main():
         assert evs[0][1]["text"] == "hello **world**", evs
         assert evs[0][1]["title"] == "Greeting", evs
 
+        # delete a single message: only the survivor is replayed
+        assert post("/send", {"text": "second"})["id"] == 2
+        post("/delete", {"id": 1})
+        evs = read_events(1)
+        assert evs[0][1]["text"] == "second", evs
+
         # clear empties history and emits a clear event
         post("/clear", {})
         results = []
         t = threading.Thread(target=lambda: results.extend(read_events(1)))
         t.start()
         time.sleep(0.3)  # let the reader subscribe (empty history -> no replay)
-        post("/send", {"text": "live msg"})  # live push, id continues at 2
+        post("/send", {"text": "live msg"})  # live push, id keeps counting
         t.join(timeout=3)
         assert results and results[0][1]["text"] == "live msg", results
-        assert results[0][1]["id"] == 2, results
+        assert results[0][1]["id"] == 3, results
 
         # bad request: missing text -> 400
         try:

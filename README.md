@@ -20,6 +20,7 @@ Beamer replaces that. Tell Claude to put something on the beamer and it shows up
 - Real Markdown. Headings, bold, lists, links, and code blocks all render.
 - A Copy button on every card that copies the original clean text.
 - An optional chime when a new card arrives, toggled with the bell in the top corner and remembered between visits.
+- A tidy feed. A bin icon on each card removes that one message, and Wipe in the top bar clears them all.
 - Nothing to install. One small Python file, the kind already sitting on your Mac.
 - Stays on your machine. It listens on `127.0.0.1` only and never touches the network.
 
