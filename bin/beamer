@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""beamer CLI: ensure the server is running, then send/clear/open/stop."""
+import json
+import os
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PORT = int(os.environ.get("BEAMER_PORT", "4040"))
+BASE = f"http://127.0.0.1:{PORT}"
+TMP = Path(os.environ.get("TMPDIR", "/tmp")) / "beamer"
+PIDFILE = TMP / f"beamer-{PORT}.pid"
+LOGFILE = TMP / f"beamer-{PORT}.log"
+
+
+def is_up():
+    try:
+        urllib.request.urlopen(BASE + "/", timeout=0.5)
+        return True
+    except Exception:
+        return False
+
+
+def start_server():
+    TMP.mkdir(parents=True, exist_ok=True)
+    log = open(LOGFILE, "ab")
+    proc = subprocess.Popen(
+        [sys.executable, str(ROOT / "beamer.py")],
+        stdout=log, stderr=log, start_new_session=True)
+    PIDFILE.write_text(str(proc.pid))
+    for _ in range(50):  # up to ~5s
+        if is_up():
+            return True
+        time.sleep(0.1)
+    return False
+
+
+def ensure_up():
+    if is_up():
+        return
+    if not start_server():
+        sys.stderr.write(
+            f"beamer: server did not start.\n"
+            f"  run manually: python3 {ROOT / 'beamer.py'}\n"
+            f"  log: {LOGFILE}\n")
+        sys.exit(1)
+
+
+def post(path, obj):
+    data = json.dumps(obj).encode()
+    req = urllib.request.Request(
+        BASE + path, data=data,
+        headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=5) as r:
+        return json.loads(r.read())
+
+
+def cmd_send(rest):
+    title = None
+    if "--title" in rest:
+        i = rest.index("--title")
+        title = rest[i + 1] if i + 1 < len(rest) else None
+    text = sys.stdin.read()
+    if not text.strip():
+        sys.stderr.write("beamer: no text on stdin\n")
+        sys.exit(1)
+    ensure_up()
+    res = post("/send", {"text": text, "title": title})
+    print(f"beamed #{res.get('id')}")
+
+
+def cmd_open(rest):
+    ensure_up()
+    subprocess.run(["open", BASE + "/"])
+    print(BASE + "/")
+
+
+def cmd_clear(rest):
+    ensure_up()
+    post("/clear", {})
+    print("cleared")
+
+
+def cmd_stop(rest):
+    if PIDFILE.exists():
+        try:
+            os.kill(int(PIDFILE.read_text().strip()), 15)
+        except (ProcessLookupError, ValueError):
+            pass
+        PIDFILE.unlink(missing_ok=True)
+        print("stopped")
+    else:
+        print("not running")
+
+
+COMMANDS = {"send": cmd_send, "open": cmd_open,
+            "clear": cmd_clear, "stop": cmd_stop}
+
+
+def main():
+    args = sys.argv[1:]
+    if not args or args[0] not in COMMANDS:
+        sys.stderr.write("usage: beamer {send|open|clear|stop} [--title T]\n")
+        sys.exit(2)
+    COMMANDS[args[0]](args[1:])
+
+
+if __name__ == "__main__":
+    main()
