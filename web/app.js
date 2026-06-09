@@ -64,19 +64,21 @@ const EFFECTS = {
     });
   },
   Beam(c, t) {
-    // "Energize" transporter shimmer: a rising sweep with sparkly overtones.
+    // "Energize" transporter shimmer: a long rising sweep with a sparkly cascade.
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(196, t);
-    osc.frequency.exponentialRampToValueAtTime(1760, t + 0.6);
+    osc.frequency.setValueAtTime(147, t);
+    osc.frequency.exponentialRampToValueAtTime(1976, t + 1.3);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.16, t + 0.06);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.72);
+    gain.gain.exponentialRampToValueAtTime(0.16, t + 0.08);
+    gain.gain.setValueAtTime(0.16, t + 1.0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
     osc.connect(gain).connect(c.destination);
     osc.start(t);
-    osc.stop(t + 0.75);
-    [880, 1320, 1760].forEach((f, i) => tone(c, f, t + 0.12 + i * 0.08, 0.28, "triangle", 0.08));
+    osc.stop(t + 1.65);
+    [660, 880, 1100, 1320, 1760, 2093].forEach((f, i) =>
+      tone(c, f, t + 0.15 + i * 0.14, 0.32, "triangle", 0.07));
   },
 };
 
