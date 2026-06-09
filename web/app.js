@@ -54,6 +54,30 @@ const EFFECTS = {
   Coin(c, t) { tone(c, 987.77, t, 0.07, "square", 0.12); tone(c, 1318.51, t + 0.07, 0.20, "square", 0.12); },
   Pop(c, t) { tone(c, 440, t, 0.12, "sine", 0.22).frequency.exponentialRampToValueAtTime(160, t + 0.12); },
   Knock(c, t) { tone(c, 180, t, 0.12, "triangle", 0.3); tone(c, 120, t + 0.05, 0.14, "triangle", 0.25); },
+  Airhorn(c, t) {
+    // Two bold sawtooth blasts, a stacked chord for that "look up now" punch.
+    [0, 0.34].forEach((off) => {
+      const s = t + off;
+      tone(c, 233.08, s, 0.3, "sawtooth", 0.26);
+      tone(c, 311.13, s, 0.3, "sawtooth", 0.22);
+      tone(c, 466.16, s, 0.3, "sawtooth", 0.16);
+    });
+  },
+  Beam(c, t) {
+    // "Energize" transporter shimmer: a rising sweep with sparkly overtones.
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(196, t);
+    osc.frequency.exponentialRampToValueAtTime(1760, t + 0.6);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.16, t + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.72);
+    osc.connect(gain).connect(c.destination);
+    osc.start(t);
+    osc.stop(t + 0.75);
+    [880, 1320, 1760].forEach((f, i) => tone(c, f, t + 0.12 + i * 0.08, 0.28, "triangle", 0.08));
+  },
 };
 
 function playEffect() {
