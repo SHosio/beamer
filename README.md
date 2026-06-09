@@ -6,6 +6,8 @@ You work with Claude in a terminal on one monitor. Beamer gives you a browser ta
 
 Claude pushes, the tab shows it. That is the whole idea.
 
+The name is a nod to *"Beam me up, Scotty"* from Star Trek. Claude beams text across to your other screen, and one of the notification sounds is a transporter shimmer for good measure.
+
 ![A message card on the beamer page](docs/screenshot.png)
 
 ## Why you might want this
