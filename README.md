@@ -12,6 +12,8 @@ The name is a nod to *"Beam me up, Scotty"* from Star Trek. Claude beams text ac
 
 ## Why you might want this
 
+Like, don't you just sometimes want to send your best stuff to another screen where you can easily grab it?
+
 Reading code review notes, lecture-style explanations, or long answers inside a scrolling terminal is uncomfortable. Copy-pasting a single sentence out of a terminal drags in stray whitespace and line wraps. So you end up asking Claude to "dump that into a file" just to read or copy it cleanly.
 
 Beamer replaces that. Tell Claude to put something on the beamer and it shows up on your second screen as a tidy card, formatted, with a Copy button that hands you the exact text and nothing else.
