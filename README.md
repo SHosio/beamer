@@ -47,6 +47,8 @@ printf '# It works\n\nThis card is **live**.' | ./bin/beamer send --title "Hello
 
 Drag the tab to your second monitor and leave it there. If you forget to open one, `send` notices that no tab is connected and opens it for you.
 
+On macOS with Chrome running, Beamer reuses your existing Chrome: it finds an open beamer tab in any window or profile and focuses it, instead of spawning a new window. The first time, macOS asks for permission to control Chrome; allow it once. If Chrome is not running, it falls back to your default browser.
+
 Other commands:
 
 ```bash

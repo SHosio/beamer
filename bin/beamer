@@ -67,6 +67,63 @@ def client_count():
         return 0
 
 
+def chrome_running():
+    try:
+        return subprocess.run(["pgrep", "-x", "Google Chrome"],
+                              capture_output=True).returncode == 0
+    except Exception:
+        return False
+
+
+# AppleScript: focus an existing beamer tab in any Chrome window (any profile),
+# otherwise open one new tab in the frontmost window. Avoids spawning new windows
+# and duplicate tabs across profiles. argv: theURL, needle.
+CHROME_FOCUS = """
+on run argv
+  set theURL to item 1 of argv
+  set needle to item 2 of argv
+  tell application "Google Chrome"
+    if (count of windows) is 0 then
+      make new window
+      set URL of active tab of front window to theURL
+      activate
+      return
+    end if
+    repeat with w in windows
+      set tabIndex to 1
+      repeat with t in tabs of w
+        if (URL of t) contains needle then
+          set active tab index of w to tabIndex
+          set index of w to 1
+          activate
+          return
+        end if
+        set tabIndex to tabIndex + 1
+      end repeat
+    end repeat
+    tell front window to make new tab with properties {URL:theURL}
+    activate
+  end tell
+end run
+"""
+
+
+def open_url():
+    url = BASE + "/"
+    # Reuse the running Chrome (and find the tab across profiles) when possible.
+    if sys.platform == "darwin" and chrome_running():
+        try:
+            r = subprocess.run(
+                ["osascript", "-e", CHROME_FOCUS, url, f"127.0.0.1:{PORT}"],
+                capture_output=True, timeout=5)
+            if r.returncode == 0:
+                return
+        except Exception:
+            pass
+    # Fallback: let the OS pick the default browser.
+    subprocess.run(["open", url])
+
+
 def cmd_send(rest):
     title = None
     if "--title" in rest:
@@ -80,14 +137,14 @@ def cmd_send(rest):
     # Open a tab only when nothing is listening, so the message is actually seen.
     # The new tab replays history on connect, so this card is not missed.
     if os.environ.get("BEAMER_AUTOOPEN", "1") != "0" and client_count() == 0:
-        subprocess.run(["open", BASE + "/"])
+        open_url()
     res = post("/send", {"text": text, "title": title})
     print(f"beamed #{res.get('id')}")
 
 
 def cmd_open(rest):
     ensure_up()
-    subprocess.run(["open", BASE + "/"])
+    open_url()
     print(BASE + "/")
 
 
