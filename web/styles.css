@@ -40,6 +40,9 @@ select.ctrl:focus { outline: none; border-color: var(--accent); }
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 10px; color: var(--muted); font-size: 14px;
 }
+.meta { display: flex; gap: 8px; align-items: baseline; }
+.meta .nick { color: var(--text); opacity: 0.8; font-weight: 600; }
+.meta .time { color: var(--muted); }
 .actions { display: flex; gap: 8px; }
 .copy, .del {
   background: transparent; color: var(--muted); border: 1px solid var(--line);
@@ -62,3 +65,68 @@ select.ctrl:focus { outline: none; border-color: var(--accent); }
 .body pre code { background: none; border: none; padding: 0; }
 .body a { color: var(--accent); }
 .empty { text-align: center; color: var(--muted); margin-top: 12vh; font-size: 18px; }
+
+/* ============================== Skins ============================== */
+/* Beamer (default) uses the :root values above; no overrides needed. */
+
+/* --- Light: clean paper --- */
+body.skin-light {
+  --bg: #f6f7f9; --card: #ffffff; --line: #e2e5ea;
+  --text: #1c2128; --muted: #6b7280; --accent: #2563eb;
+}
+body.skin-light .topbar { background: rgba(246,247,249,0.9); }
+body.skin-light .body code { background: #eef1f5; }
+body.skin-light .body pre { background: #1c2128; }
+body.skin-light .body pre code { color: #e8eaed; }
+
+/* --- Phosphor: green CRT terminal --- */
+body.skin-phosphor {
+  --bg: #020a04; --card: #04140a; --line: #0c3a1d;
+  --text: #39ff7a; --muted: #1f9b4e; --accent: #b6ff5f;
+  font-family: "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  text-shadow: 0 0 4px rgba(57, 255, 122, 0.45);
+}
+body.skin-phosphor .topbar { background: rgba(2, 10, 4, 0.9); }
+body.skin-phosphor .body code, body.skin-phosphor .body pre {
+  background: #04160b;
+}
+
+/* --- irssi: terminal IRC log --- */
+body.skin-irssi {
+  --bg: #000000; --card: transparent; --line: #1c1c1c;
+  --text: #c8c8c8; --muted: #6b6b6b; --accent: #5fd7ff;
+  font-family: "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+/* topbar becomes the classic blue status bar */
+body.skin-irssi .topbar {
+  background: #1c4f7c; color: #e6e6e6; border-bottom: none;
+  backdrop-filter: none; text-transform: none; letter-spacing: 0;
+  font-weight: 700; font-size: 13px; font-family: inherit;
+}
+body.skin-irssi .dot { background: #b7ff5f; }
+body.skin-irssi .ctrl { color: #e6e6e6; border-color: rgba(255, 255, 255, 0.3); }
+body.skin-irssi select.ctrl { background: #133a5c; color: #e6e6e6; }
+body.skin-irssi #wipe:hover { color: #ff8787; border-color: #ff8787; }
+/* feed becomes a dense log */
+body.skin-irssi #feed { max-width: none; padding: 12px 16px; }
+body.skin-irssi .card {
+  background: none; border: none; border-radius: 0;
+  padding: 1px 0; margin: 0; animation: none;
+}
+body.skin-irssi .card-head { margin-bottom: 1px; font-size: 15px; }
+body.skin-irssi .body { font-size: 15px; padding-left: 1.5ch; }
+body.skin-irssi .body p { margin: 0.15em 0; }
+/* render the prefix as "HH:MM <nick>" */
+body.skin-irssi .meta { gap: 6px; }
+body.skin-irssi .meta .time { order: 0; color: var(--muted); opacity: 1; }
+body.skin-irssi .meta .nick { order: 1; color: var(--accent); font-weight: 400; opacity: 1; }
+body.skin-irssi .meta .nick::before { content: "<"; color: var(--muted); }
+body.skin-irssi .meta .nick::after { content: ">"; color: var(--muted); }
+/* buttons stay out of the way until hover */
+body.skin-irssi .actions { opacity: 0; transition: opacity 0.1s; }
+body.skin-irssi .card:hover .actions { opacity: 1; }
+body.skin-irssi .copy, body.skin-irssi .del {
+  border: none; padding: 0 6px; font-size: 13px;
+}
+body.skin-irssi .body code { background: #141414; border-color: #2a2a2a; }
+body.skin-irssi .body pre { background: #0a0a0a; border-color: #2a2a2a; }

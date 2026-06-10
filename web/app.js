@@ -3,6 +3,7 @@ const empty = document.getElementById("empty");
 const soundBtn = document.getElementById("sound");
 const wipeBtn = document.getElementById("wipe");
 const effectSel = document.getElementById("effect");
+const skinSel = document.getElementById("skin");
 
 function postJSON(path, obj) {
   return fetch(path, {
@@ -119,6 +120,30 @@ soundBtn.addEventListener("click", () => {
   if (soundOn) playEffect();  // confirms the choice and unlocks audio for later
 });
 
+// Skins are pure CSS, applied as a class on <body>. Choice persists.
+const SKINS = ["Beamer", "irssi", "Light", "Phosphor"];
+let skin = localStorage.getItem("beamer-skin") || "Beamer";
+if (!SKINS.includes(skin)) skin = "Beamer";
+
+function applySkin() {
+  document.body.className = "skin-" + skin.toLowerCase();
+}
+
+SKINS.forEach((name) => {
+  const opt = document.createElement("option");
+  opt.value = name;
+  opt.textContent = name;
+  skinSel.append(opt);
+});
+skinSel.value = skin;
+applySkin();
+
+skinSel.addEventListener("change", () => {
+  skin = skinSel.value;
+  localStorage.setItem("beamer-skin", skin);
+  applySkin();
+});
+
 function relTime(ts) {
   return new Date(ts * 1000).toLocaleTimeString();
 }
@@ -134,7 +159,17 @@ function addCard(msg) {
   head.className = "card-head";
 
   const meta = document.createElement("div");
-  meta.textContent = (msg.title ? msg.title + " · " : "") + relTime(msg.ts);
+  meta.className = "meta";
+  if (msg.title) {
+    const nick = document.createElement("span");
+    nick.className = "nick";
+    nick.textContent = msg.title;
+    meta.append(nick);
+  }
+  const time = document.createElement("span");
+  time.className = "time";
+  time.textContent = relTime(msg.ts);
+  meta.append(time);
 
   const copy = document.createElement("button");
   copy.className = "copy";
