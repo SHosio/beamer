@@ -121,7 +121,7 @@ soundBtn.addEventListener("click", () => {
 });
 
 // Skins are pure CSS, applied as a class on <body>. Choice persists.
-const SKINS = ["Beamer", "irssi", "Light", "Phosphor"];
+const SKINS = ["Beamer", "irssi", "Light", "Phosphor", "Fallout"];
 let skin = localStorage.getItem("beamer-skin") || "Beamer";
 if (!SKINS.includes(skin)) skin = "Beamer";
 

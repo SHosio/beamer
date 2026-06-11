@@ -130,3 +130,54 @@ body.skin-irssi .copy, body.skin-irssi .del {
 }
 body.skin-irssi .body code { background: #141414; border-color: #2a2a2a; }
 body.skin-irssi .body pre { background: #0a0a0a; border-color: #2a2a2a; }
+
+/* --- Fallout: Pip-Boy CRT --- */
+body.skin-fallout {
+  --bg: #02140a; --card: rgba(12, 48, 26, 0.35); --line: #1c8f3f;
+  --text: #2cff86; --muted: #19b257; --accent: #b6ff4a;
+  font-family: "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  text-shadow: 0 0 5px rgba(44, 255, 134, 0.55);
+}
+body.skin-fallout ::selection { background: rgba(44, 255, 134, 0.3); }
+/* CRT scanlines, gently flickering */
+body.skin-fallout::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9;
+  background: repeating-linear-gradient(
+    rgba(44, 255, 134, 0.05) 0px,
+    rgba(44, 255, 134, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: ff-flicker 4s steps(50) infinite;
+}
+@keyframes ff-flicker {
+  0% { opacity: 0.85; } 4% { opacity: 0.68; } 8% { opacity: 0.9; }
+  50% { opacity: 0.82; } 70% { opacity: 0.92; } 100% { opacity: 0.85; }
+}
+/* curved-tube vignette */
+body.skin-fallout::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 8;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.55) 100%);
+  box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.85);
+}
+body.skin-fallout .topbar {
+  background: rgba(4, 22, 12, 0.92); color: var(--accent);
+  border-bottom: 2px solid var(--line); backdrop-filter: none;
+  text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+  font-family: inherit;
+}
+body.skin-fallout .dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+body.skin-fallout .ctrl { color: var(--text); border-color: var(--line); border-radius: 0; }
+body.skin-fallout .ctrl:hover { color: var(--accent); border-color: var(--accent); }
+body.skin-fallout select.ctrl { background: #062012; color: var(--text); }
+body.skin-fallout .card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 0;
+  box-shadow: inset 0 0 14px rgba(44, 255, 134, 0.1), 0 0 8px rgba(44, 255, 134, 0.08);
+}
+body.skin-fallout .body h1, body.skin-fallout .body h2, body.skin-fallout .body h3 {
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent);
+}
+body.skin-fallout .meta .nick { color: var(--accent); }
+body.skin-fallout .copy, body.skin-fallout .del { border-color: var(--line); border-radius: 0; }
+body.skin-fallout .body code { background: #04200f; border-color: var(--line); }
+body.skin-fallout .body pre { background: #03190b; border-color: var(--line); border-radius: 0; }
