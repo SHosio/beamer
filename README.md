@@ -25,7 +25,7 @@ Beamer replaces that. Tell Claude to put something on the beamer and it shows up
 - A Copy button on every card that copies the original clean text.
 - An optional chime when a new card arrives, toggled with the bell in the top corner and remembered between visits. Pick from a handful of synthesized sounds in the dropdown next to it.
 - A tidy feed. A bin icon on each card removes that one message, and Wipe in the top bar clears them all.
-- Skins. Pick from the dropdown: Beamer (the default dark cards), irssi (a black, monospace IRC log with a blue status bar), Light, Phosphor (green CRT terminal), or Fallout (a Pip-Boy CRT with scanlines and vignette). Your pick is remembered.
+- Skins. Pick from the dropdown: Beamer (the default dark cards), irssi (a black, monospace IRC log with a blue status bar), Light, Matrix (green code on black with a still digital-rain backdrop), or Fallout (an amber Pip-Boy terminal with scanlines, vignette, and a hazard status bar). Your pick is remembered.
 - Nothing to install. One small Python file, the kind already sitting on your Mac.
 - Stays on your machine. It listens on `127.0.0.1` only and never touches the network.
 

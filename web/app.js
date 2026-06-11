@@ -121,12 +121,56 @@ soundBtn.addEventListener("click", () => {
 });
 
 // Skins are pure CSS, applied as a class on <body>. Choice persists.
-const SKINS = ["Beamer", "irssi", "Light", "Phosphor", "Fallout"];
+const SKINS = ["Beamer", "irssi", "Light", "Matrix", "Fallout"];
 let skin = localStorage.getItem("beamer-skin") || "Beamer";
 if (!SKINS.includes(skin)) skin = "Beamer";
 
+// --- Matrix digital rain (runs only while the Matrix skin is active) ---
+const rain = document.getElementById("rain");
+const rainCtx = rain.getContext("2d");
+const GLYPHS = "アイウエオカキクケコサシスセソタチツテトナニヌネノﾊﾋﾌﾍﾎ0123456789Z:.=*+-<>".split("");
+const CELL = 18;
+
+// A still wall of vertical green code. Drawn once, no animation.
+function drawRain() {
+  rain.width = window.innerWidth;
+  rain.height = window.innerHeight;
+  rainCtx.fillStyle = "#000";
+  rainCtx.fillRect(0, 0, rain.width, rain.height);
+  rainCtx.font = CELL + "px monospace";
+  const cols = Math.ceil(rain.width / CELL);
+  const rows = Math.ceil(rain.height / CELL) + 2;
+  for (let x = 0; x < cols; x++) {
+    let y = Math.floor(Math.random() * rows);
+    while (y < rows) {
+      const len = 5 + Math.floor(Math.random() * 16);
+      for (let k = 0; k < len && y < rows; k++, y++) {
+        const a = Math.max(0.06, 0.5 - k * 0.03); // brighter head, fading tail
+        rainCtx.fillStyle = "rgba(0, 200, 80, " + a.toFixed(2) + ")";
+        rainCtx.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], x * CELL, y * CELL);
+      }
+      y += 2 + Math.floor(Math.random() * 8); // gap before the next streak
+    }
+  }
+}
+
+function startRain() {
+  rain.style.display = "block";
+  drawRain();
+}
+
+function stopRain() {
+  rain.style.display = "none";
+}
+
+window.addEventListener("resize", () => {
+  if (rain.style.display !== "none") drawRain();
+});
+
 function applySkin() {
   document.body.className = "skin-" + skin.toLowerCase();
+  if (skin === "Matrix") startRain();
+  else stopRain();
 }
 
 SKINS.forEach((name) => {
