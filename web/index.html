@@ -9,14 +9,16 @@
 </head>
 <body>
   <header class="topbar">
-    <span class="dot"></span><span class="brand">Beamer</span>
+    <span class="dot"></span>Beamer
     <button id="wipe" class="ctrl" title="Delete all messages">Wipe</button>
     <select id="skin" class="ctrl" title="Skin"></select>
     <select id="effect" class="ctrl" title="Notification sound"></select>
     <button id="sound" class="ctrl sound" title="Toggle sound">🔔</button>
   </header>
   <main id="feed"></main>
-  <div id="empty" class="empty">Waiting for Claude to beam something…</div>
+  <div id="empty" class="empty">
+    <span class="status-dot"></span>Online · waiting for a beam
+  </div>
   <script src="/md.js"></script>
   <script src="/app.js"></script>
 </body>
